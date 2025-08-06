@@ -72,11 +72,6 @@ go run main.go
     "success": true,
     "message": "查询成功",
     "data": {
-        "year": "2023",
-        "college": "计算机学院",
-        "class": "计算机1班",
-        "student_id": "202301001",
-        "name": "张三",
         "major": "计算机科学与技术"
     }
 }
@@ -95,22 +90,6 @@ go run main.go
 **接口地址：** `POST /api/v1/reload`
 
 当添加或修改Excel文件后，可调用此接口重新加载数据。
-
-### 4. 获取统计信息
-
-**接口地址：** `GET /api/v1/stats`
-
-**响应示例：**
-```json
-{
-    "success": true,
-    "data": {
-        "total_students": 1500,
-        "colleges": ["计算机学院", "电子学院", "机械学院"],
-        "years": ["2021", "2022", "2023"]
-    }
-}
-```
 
 ### 5. 健康检查
 
