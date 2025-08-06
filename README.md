@@ -56,44 +56,74 @@ go run main.go
 
 ### 1. 查询学生信息（POST）
 
-**接口地址：** `POST /api/v1/search`
+**接口地址：** `POST /api/search`
 
 **请求体：**
 ```json
 {
-    "student_id": "202301001",
-    "name": "张三"
+    "student_id": "302024670001",
+    "name": "张伟"
 }
 ```
 
 **响应示例：**
+
+成功找到学生：
 ```json
 {
-    "success": true,
-    "message": "查询成功",
-    "data": {
-        "major": "计算机科学与技术"
-    }
+    "code": 200,
+    "msg": "查询成功",
+    "data": "计算机科学与技术"
+}
+```
+
+未找到学生：
+```json
+{
+    "code": 200001,
+    "msg": "非新生"
+}
+```
+
+系统错误：
+```json
+{
+    "code": 200500,
+    "msg": "学号格式错误，应为12位数字"
 }
 ```
 
 ### 2. 查询学生信息（GET）
 
-**接口地址：** `GET /api/v1/search?student_id=202301001&name=张三`
+**接口地址：** `GET /api/search?student_id=302024670001&name=张伟`
 
 **参数：**
-- `student_id`: 学号（必需）
+- `student_id`: 学号（必需，12位数字）
 - `name`: 姓名（必需）
 
-### 3. 重新加载Excel文件
+**响应格式同POST接口**
 
-**接口地址：** `POST /api/v1/reload`
-
-当添加或修改Excel文件后，可调用此接口重新加载数据。
-
-### 5. 健康检查
+### 3. 健康检查
 
 **接口地址：** `GET /health`
+
+**响应示例：**
+```json
+{
+    "status": "ok",
+    "total_records": 38
+}
+```
+
+## 响应状态码说明
+
+| Code | 含义 | 说明 |
+|------|------|------|
+| 200 | 成功 | 查询成功，找到学生信息 |
+| 200001 | 非新生 | 查询成功，但未找到匹配的学生信息 |
+| 200500 | 系统错误 | 参数错误、学号格式错误等系统异常 |
+
+注意：所有接口都返回HTTP 200状态码，具体的业务状态通过response中的code字段区分。
 
 ## 使用示例
 
@@ -101,18 +131,15 @@ go run main.go
 
 ```bash
 # POST方式查询
-curl -X POST http://localhost:8080/api/v1/search \
+curl -X POST http://localhost:8080/api/search \
   -H "Content-Type: application/json" \
-  -d '{"student_id":"202301001","name":"张三"}'
+  -d '{"student_id":"302024670001","name":"张伟"}'
 
 # GET方式查询
-curl "http://localhost:8080/api/v1/search?student_id=202301001&name=张三"
+curl "http://localhost:8080/api/search?student_id=302024670001&name=张伟"
 
-# 获取统计信息
-curl http://localhost:8080/api/v1/stats
-
-# 重新加载数据
-curl -X POST http://localhost:8080/api/v1/reload
+# 健康检查
+curl http://localhost:8080/health
 ```
 
 ### 使用JavaScript查询
@@ -120,7 +147,7 @@ curl -X POST http://localhost:8080/api/v1/reload
 ```javascript
 // 查询学生信息
 async function searchStudent(studentId, name) {
-    const response = await fetch('http://localhost:8080/api/v1/search', {
+    const response = await fetch('http://localhost:8080/api/search', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -136,31 +163,26 @@ async function searchStudent(studentId, name) {
 }
 
 // 使用示例
-searchStudent('202301001', '张三').then(result => {
-    if (result.success) {
-        console.log('找到学生:', result.data);
+searchStudent('302024670001', '张伟').then(result => {
+    if (result.code === 200) {
+        console.log('找到学生，专业:', result.data);
+    } else if (result.code === 200001) {
+        console.log('非新生');
     } else {
-        console.log('查询失败:', result.message);
+        console.log('查询错误:', result.msg);
     }
 });
 ```
-
-## 错误处理
-
-API会返回相应的HTTP状态码和错误信息：
-
-- `200 OK`: 查询成功
-- `400 Bad Request`: 请求参数错误
-- `404 Not Found`: 未找到匹配的学生信息
-- `500 Internal Server Error`: 服务器内部错误
 
 ## 注意事项
 
 1. **Excel文件格式**：确保Excel文件包含正确的6列数据，第一行为标题行将被跳过
 2. **数据完整性**：学号和姓名字段不能为空，否则该条记录会被跳过
-3. **文件编码**：支持标准的xlsx格式文件
-4. **查询匹配**：查询时学号和姓名必须完全匹配（区分大小写）
-5. **性能考虑**：所有数据加载到内存中，适合中小型数据集
+3. **学号格式**：学号必须是12位数字，如：302024670001
+4. **文件编码**：支持标准的xlsx格式文件
+5. **查询匹配**：查询时学号和姓名必须完全匹配（区分大小写）
+6. **响应格式**：所有接口统一返回HTTP 200，通过code字段区分业务状态
+7. **性能考虑**：所有数据加载到内存中，适合中小型数据集
 
 ## 依赖包
 

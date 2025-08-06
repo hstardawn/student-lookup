@@ -29,9 +29,9 @@ type SearchRequest struct {
 
 // SearchResponse 查询响应结构体
 type SearchResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-	Data    string `json:"data,omitempty"`
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+	Data string `json:"data,omitempty"`
 }
 
 var students []Student
@@ -159,18 +159,18 @@ func searchStudent(studentID, name string) *Student {
 func handleSearch(c *gin.Context) {
 	var req SearchRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, SearchResponse{
-			Success: false,
-			Message: "请求参数错误: " + err.Error(),
+		c.JSON(http.StatusOK, SearchResponse{
+			Code: 200500,
+			Msg:  "请求参数错误: " + err.Error(),
 		})
 		return
 	}
 
 	// 验证学号格式
 	if !isValidStudentID(req.StudentID) {
-		c.JSON(http.StatusBadRequest, SearchResponse{
-			Success: false,
-			Message: "学号格式错误，应为12位数字",
+		c.JSON(http.StatusOK, SearchResponse{
+			Code: 200500,
+			Msg:  "学号格式错误，应为12位数字",
 		})
 		return
 	}
@@ -179,16 +179,16 @@ func handleSearch(c *gin.Context) {
 	student := searchStudent(req.StudentID, req.Name)
 	if student == nil {
 		c.JSON(http.StatusOK, SearchResponse{
-			Success: true,
-			Message: "非新生",
+			Code: 200001,
+			Msg:  "非新生",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, SearchResponse{
-		Success: true,
-		Message: "是新生",
-		Data:    student.Major,
+		Code: 200,
+		Msg:  "查询成功",
+		Data: student.Major,
 	})
 }
 
@@ -198,18 +198,18 @@ func handleSearchByParams(c *gin.Context) {
 	name := c.Query("name")
 
 	if studentID == "" || name == "" {
-		c.JSON(http.StatusBadRequest, SearchResponse{
-			Success: false,
-			Message: "缺少必要参数: student_id 和 name",
+		c.JSON(http.StatusOK, SearchResponse{
+			Code: 200500,
+			Msg:  "缺少必要参数: student_id 和 name",
 		})
 		return
 	}
 
 	// 验证学号格式
 	if !isValidStudentID(studentID) {
-		c.JSON(http.StatusBadRequest, SearchResponse{
-			Success: false,
-			Message: "学号格式错误，应为12位数字",
+		c.JSON(http.StatusOK, SearchResponse{
+			Code: 200500,
+			Msg:  "学号格式错误，应为12位数字",
 		})
 		return
 	}
@@ -218,16 +218,16 @@ func handleSearchByParams(c *gin.Context) {
 	student := searchStudent(studentID, name)
 	if student == nil {
 		c.JSON(http.StatusOK, SearchResponse{
-			Success: true,
-			Message: "非新生",
+			Code: 200001,
+			Msg:  "非新生",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, SearchResponse{
-		Success: true,
-		Message: "是新生",
-		Data:    student.Major,
+		Code: 200,
+		Msg:  "查询成功",
+		Data: student.Major,
 	})
 }
 
